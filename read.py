@@ -1,3 +1,4 @@
+from traceback import print_tb
 import pandas as pd
 MAX_SLOTS = 26*6+5
 M = 0
@@ -562,6 +563,11 @@ for index, row in data.iterrows():
 data = pd.read_csv('Recharge.csv')
 for index, row in data.iterrows():
     if(row['Station ID'][-1] >= 'A' and row['Station ID'][-1] <= 'Z'):
+        ID = int(ord(row['Station ID'][-1])-ord('A'))
+        if(len(chargingstations) > ID):
+            chargingstations[ID-1].set_slots(int(row['Charging Slots']))
+            chargingstations[ID -
+                             1].set_current(int(row['Charging Current'][:-2]))
         continue
     ID = int(row['Station ID'][-1])
     if(ID >= 1 and ID <= 9 and len(warehouses) >= ID):
