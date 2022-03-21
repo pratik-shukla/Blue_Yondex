@@ -1,0 +1,7 @@
+Drone Type,Maintenance Fixed Cost (per day),Maintenance Variable Cost (per hour of flight time)
+DroneType1,$10 ,$5 
+DroneType2,$15 ,$8 
+DroneType3,$20 ,$13 
+DroneType4,$20 ,$15 
+DroneType5,$30 ,$20 
+DroneType6,$50 ,$25 
