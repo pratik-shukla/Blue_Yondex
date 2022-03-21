@@ -1,23 +1,102 @@
 import pandas as pd
-data = pd.read_csv('Demand.csv')
+MAX_SLOTS = 26*6+5
 M = 0
 C = 0
 demands = []
 drones = []
 warehouses = []
+chargingstations = []
 items = []
+noflyzones = []
+
+
+def setvalue(obj, coordinate, number, val):
+    if(coordinate == 'X'):
+        if(number == 1):
+            obj.set_x1(val)
+        elif(number == 2):
+            obj.set_x2(val)
+        elif(number == 3):
+            obj.set_x3(val)
+        elif(number == 4):
+            obj.set_x4(val)
+        elif(number == 5):
+            obj.set_x5(val)
+        elif(number == 6):
+            obj.set_x6(val)
+        elif(number == 7):
+            obj.set_x7(val)
+        elif(number == 8):
+            obj.set_x8(val)
+    elif(coordinate == 'Y'):
+        if(number == 1):
+            obj.set_y1(val)
+        elif(number == 2):
+            obj.set_y2(val)
+        elif(number == 3):
+            obj.set_y3(val)
+        elif(number == 4):
+            obj.set_y4(val)
+        elif(number == 5):
+            obj.set_y5(val)
+        elif(number == 6):
+            obj.set_y6(val)
+        elif(number == 7):
+            obj.set_y7(val)
+        elif(number == 8):
+            obj.set_y8(val)
+    elif(coordinate == 'Z'):
+        if(number == 1):
+            obj.set_z1(val)
+        elif(number == 2):
+            obj.set_z2(val)
+        elif(number == 3):
+            obj.set_z3(val)
+        elif(number == 4):
+            obj.set_z4(val)
+        elif(number == 5):
+            obj.set_z5(val)
+        elif(number == 6):
+            obj.set_z6(val)
+        elif(number == 7):
+            obj.set_z7(val)
+        elif(number == 8):
+            obj.set_z8(val)
 
 
 def filter(row):
-    ID = int(row['Type'][-1])
-    value = int(row['Value'])
+    ID = 0
+    if(row['Type'] != 'Noflyzone'):
+        ID = int(row['Type'][-1])
+    value = float(row['Value'])
     obj = None
+    flag = 0
     if(row['Type'].startswith('Drone')):
-        obj = Drone(ID)
+        if(len(drones) < ID):
+            obj = Drone(ID)
+            flag = 1
+        else:
+            obj = drones[ID-1]
     elif(row['Type'].startswith('WH')):
-        obj = Warehouse(ID)
-        obj.set_iswarehouse(1)
-
+        ID = int(row['Parameter_ID'][2:-1])
+        if(len(warehouses) < ID):
+            obj = Warehouse(ID)
+            flag = 1
+        else:
+            obj = warehouses[ID-1]
+    elif(row['Type'].startswith('Recharge')):
+        if(len(chargingstations) < ID):
+            obj = ChargingStations(ID)
+            flag = 1
+        else:
+            obj = chargingstations[ID-1]
+    else:
+        ID = int(row['Parameter_ID'][1:-1])
+        if(len(noflyzones) < ID):
+            obj = NoFlyZone(ID)
+            flag = 1
+        else:
+            obj = noflyzones[ID-1]
     if(row['Parameter_ID'][0] == 'P'):
         obj.set_P(value)
     elif(row['Parameter_ID'][0] == 'Q'):
@@ -30,10 +109,37 @@ def filter(row):
         obj.set_C(value)
     elif(row['Parameter_ID'].startswith('DT')):
         obj.set_cnt(value)
+    elif(row['Parameter_ID'].endswith('X1')):
+        obj.set_x(value)
+    elif(row['Parameter_ID'].endswith('Y1')):
+        obj.set_y(value)
+    elif(row['Parameter_ID'].startswith('X')):
+        setvalue(obj, 'X', int(row['ParameterID'][-1]), value)
+    elif(row['Parameter_ID'].startswith('Y')):
+        setvalue(obj, 'Y', int(row['ParameterID'][-1]), value)
+    elif(row['Parameter_ID'].startswith('Z')):
+        setvalue(obj, 'Z', int(row['ParameterID'][-1]), value)
+
     if(row['Type'].startswith('Drone')):
-        drones.append(obj)
+        if(flag):
+            drones.append(obj)
+        else:
+            drones[ID-1] = obj
     elif(row['Type'].startswith('WH')):
-        warehouses.append(obj)
+        if(flag):
+            warehouses.append(obj)
+        else:
+            warehouses[ID-1] = obj
+    elif(row['Type'].startswith('Recharge')):
+        if(flag):
+            chargingstations.append(obj)
+        else:
+            chargingstations[ID-1] = obj
+    else:
+        if(flag):
+            noflyzones.append(obj)
+        else:
+            noflyzones[ID-1] = obj
 
 
 class Item:
@@ -104,11 +210,7 @@ class Warehouse:
         self.y = 0
         self.z = 0
         self.current = 0
-        self.is_warehouse = 0
         self.slots = 0
-
-    def set_iswarehouse(self, val):
-        self.is_warehouse = val
 
     def set_x(self, x):
         self.x = x
@@ -123,7 +225,7 @@ class Warehouse:
         self.slots = slots
 
     def set_current(self, current):
-        self.slots = current
+        self.current = current
 
     def __str__(self):
         summary = []
@@ -132,6 +234,8 @@ class Warehouse:
         summary.append(str(self.x))
         summary.append(str(self.y))
         summary.append(str(self.z))
+        summary.append(str(self.slots))
+        summary.append(str(self.current))
         return str1.join(summary)
 
 
@@ -153,6 +257,8 @@ class Drone:
         self.fullcapacity = 0
         self.capacityvol = 0
         self.fullcapacityvol = 0
+        self.fixedcost = 0
+        self.variablecost = 0
 
     def set_A(self, A):
         self.A = A
@@ -199,6 +305,12 @@ class Drone:
     def set_capacityvol(self, capacityvol):
         self.capacityvol = capacityvol
 
+    def set_fixedcost(self, fixedcost):
+        self.fixedcost = fixedcost
+
+    def set_variablecost(self, variablecost):
+        self.variablecost = variablecost
+
     def __str__(self):
         summary = []
         str1 = ' '
@@ -209,9 +321,188 @@ class Drone:
         summary.append(str(self.P))
         summary.append(str(self.Q))
         summary.append(str(self.cnt))
+        summary.append(str(self.fullbattery))
+        summary.append(str(self.battery))
+        summary.append(str(self.fullslots))
+        summary.append(str(self.slots))
+        summary.append(str(self.weight))
+        summary.append(str(self.fullcapacity))
+        summary.append(str(self.capacity))
+        summary.append(str(self.fullcapacityvol))
+        summary.append(str(self.capacityvol))
+        summary.append(str(self.fixedcost))
+        summary.append(str(self.variablecost))
         return(str1.join(summary))
 
 
+class ChargingStations:
+    def __init__(self, ID):
+        self.ID = ID
+        self.x = 0
+        self.y = 0
+        self.z = 0
+        self.slots = 0
+        self.current = 0
+
+    def set_x(self, x):
+        self.x = x
+
+    def set_y(self, y):
+        self.y = y
+
+    def set_z(self, z):
+        self.z = z
+
+    def set_slots(self, slots):
+        self.slots = slots
+
+    def set_current(self, current):
+        self.current = current
+
+    def __str__(self):
+        summary = []
+        str1 = ' '
+        summary.append(str(self.ID))
+        summary.append(str(self.x))
+        summary.append(str(self.y))
+        summary.append(str(self.z))
+        summary.append(str(self.slots))
+        summary.append(str(self.current))
+        return str1.join(summary)
+
+
+class NoFlyZone:
+    def __init__(self, ID):
+        self.ID = ID
+        self.x1 = 0
+        self.y1 = 0
+        self.z1 = 0
+        self.x2 = 0
+        self.y2 = 0
+        self.z2 = 0
+        self.x3 = 0
+        self.y3 = 0
+        self.z3 = 0
+        self.x4 = 0
+        self.y4 = 0
+        self.z4 = 0
+        self.x5 = 0
+        self.y5 = 0
+        self.z5 = 0
+        self.x6 = 0
+        self.y6 = 0
+        self.z6 = 0
+        self.x7 = 0
+        self.y7 = 0
+        self.z7 = 0
+        self.x8 = 0
+        self.y8 = 0
+        self.z8 = 0
+
+    def set_x1(self, x1):
+        self.x1 = x1
+
+    def set_y1(self, y1):
+        self.y1 = y1
+
+    def set_z1(self, z1):
+        self.z1 = z1
+
+    def set_x2(self, x2):
+        self.x2 = x2
+
+    def set_y2(self, y2):
+        self.y2 = y2
+
+    def set_z2(self, z2):
+        self.z2 = z2
+
+    def set_x3(self, x3):
+        self.x3 = x3
+
+    def set_y3(self, y3):
+        self.y3 = y3
+
+    def set_z3(self, z3):
+        self.z3 = z3
+
+    def set_x4(self, x4):
+        self.x4 = x4
+
+    def set_y4(self, y4):
+        self.y4 = y4
+
+    def set_z4(self, z4):
+        self.z4 = z4
+
+    def set_x5(self, x5):
+        self.x5 = x5
+
+    def set_y5(self, y5):
+        self.y5 = y5
+
+    def set_z5(self, z5):
+        self.z5 = z5
+
+    def set_x6(self, x6):
+        self.x6 = x6
+
+    def set_y6(self, y6):
+        self.y6 = y6
+
+    def set_z6(self, z6):
+        self.z6 = z6
+
+    def set_x7(self, x7):
+        self.x7 = x7
+
+    def set_y7(self, y7):
+        self.y7 = y7
+
+    def set_z7(self, z7):
+        self.z7 = z7
+
+    def set_x8(self, x8):
+        self.x8 = x8
+
+    def set_y8(self, y8):
+        self.y8 = y8
+
+    def set_z8(self, z8):
+        self.z8 = z8
+
+    def __str__(self):
+        summary = []
+        str1 = ' '
+        summary.append(str(self.x1))
+        summary.append(str(self.y1))
+        summary.append(str(self.z1))
+        summary.append(str(self.x2))
+        summary.append(str(self.y2))
+        summary.append(str(self.z2))
+        summary.append(str(self.x3))
+        summary.append(str(self.y3))
+        summary.append(str(self.z3))
+        summary.append(str(self.x4))
+        summary.append(str(self.y4))
+        summary.append(str(self.z4))
+        summary.append(str(self.x5))
+        summary.append(str(self.y5))
+        summary.append(str(self.z5))
+        summary.append(str(self.x6))
+        summary.append(str(self.y6))
+        summary.append(str(self.z6))
+        summary.append(str(self.x7))
+        summary.append(str(self.y7))
+        summary.append(str(self.z7))
+        summary.append(str(self.x8))
+        summary.append(str(self.y8))
+        summary.append(str(self.z8))
+
+        return str1.join(summary)
+
+
+data = pd.read_csv('Demand.csv')
 for index, row in data.iterrows():
     ID = int(row['Demand ID'][1:])
     ItemID = int(row['Item'][5:])
@@ -249,4 +540,48 @@ data = pd.read_csv('Drones.csv')
 
 for index, row in data.iterrows():
     ID = int(row['Drone Type'][-1])
-    print(row['Battery Capacity'])
+    drones[ID-1].set_fullbattery(int(row['Battery Capacity']))
+    drones[ID-1].set_battery(int(row['Battery Capacity']))
+    drones[ID-1].set_weight(int(row['Base Weight']))
+    drones[ID-1].set_fullslots(int(row['Max Slots']))
+    drones[ID-1].set_slots(int(row['Max Slots']))
+    drones[ID-1].set_fullcapacity(int(row['Payload Capacity (KG)']))
+    drones[ID-1].set_capacity(int(row['Payload Capacity (KG)']))
+    drones[ID-1].set_fullcapacityvol(int(row['Payload Capacity (cu.cm)']))
+    drones[ID-1].set_capacityvol(int(row['Payload Capacity (cu.cm)']))
+
+data = pd.read_csv('Costs.csv')
+for index, row in data.iterrows():
+    ID = int(row['Drone Type'][-1])
+    drones[ID -
+           1].set_fixedcost(int(row['Maintenance Fixed Cost (per day)'][1:]))
+    drones[ID-1].set_variablecost(
+        int(row['Maintenance Variable Cost (per hour of flight time)'][1:]))
+
+
+data = pd.read_csv('Recharge.csv')
+for index, row in data.iterrows():
+    if(row['Station ID'][-1] >= 'A' and row['Station ID'][-1] <= 'Z'):
+        continue
+    ID = int(row['Station ID'][-1])
+    if(ID >= 1 and ID <= 9 and len(warehouses) >= ID):
+        if(row['Charging Slots'] != '∞'):
+            warehouses[ID-1].set_slots(int(row['Charging Slots']))
+        else:
+            warehouses[ID-1].set_slots(MAX_SLOTS)
+        warehouses[ID-1].set_current(int(row['Charging Current'][:-2]))
+
+    # for drone in drones:
+    #     print(drone)
+
+    # for warehouse in warehouses:
+    #     print(warehouse)
+
+    # for item in items:
+    #     print(item)
+
+    # for demand in demands:
+    #     print(demand)
+
+    # for noflyzone in noflyzones:
+    #     print(noflyzone)
