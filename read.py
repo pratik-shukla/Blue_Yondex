@@ -16,6 +16,7 @@ def filter(row):
         obj = Drone(ID)
     elif(row['Type'].startswith('WH')):
         obj = Warehouse(ID)
+        obj.set_iswarehouse(1)
 
     if(row['Parameter_ID'][0] == 'P'):
         obj.set_P(value)
@@ -102,6 +103,12 @@ class Warehouse:
         self.x = 0
         self.y = 0
         self.z = 0
+        self.current = 0
+        self.is_warehouse = 0
+        self.slots = 0
+
+    def set_iswarehouse(self, val):
+        self.is_warehouse = val
 
     def set_x(self, x):
         self.x = x
@@ -111,6 +118,12 @@ class Warehouse:
 
     def set_z(self, z):
         self.z = z
+
+    def set_slots(self, slots):
+        self.slots = slots
+
+    def set_current(self, current):
+        self.slots = current
 
     def __str__(self):
         summary = []
@@ -125,11 +138,11 @@ class Warehouse:
 class Drone:
     def __init__(self, ID):
         self.ID = ID
-        self.A = 0
-        self.B = 0
-        self.C = 0
-        self.P = 0
-        self.Q = 0
+        self.A = 0.0
+        self.B = 0.0
+        self.C = 0.0
+        self.P = 0.0
+        self.Q = 0.0
         self.cnt = 0
         self.weight = 0
         self.slots = 0
@@ -138,6 +151,8 @@ class Drone:
         self.fullbattery = 0
         self.capacity = 0
         self.fullcapacity = 0
+        self.capacityvol = 0
+        self.fullcapacityvol = 0
 
     def set_A(self, A):
         self.A = A
@@ -156,6 +171,33 @@ class Drone:
 
     def set_cnt(self, cnt):
         self.cnt = cnt
+
+    def set_fullbattery(self, fullbattery):
+        self.fullbattery = fullbattery
+
+    def set_battery(self, battery):
+        self.battery = battery
+
+    def set_fullslots(self, fullslots):
+        self.fullslots = fullslots
+
+    def set_slots(self, slots):
+        self.slots = slots
+
+    def set_weight(self, weight):
+        self.weight = weight
+
+    def set_capacity(self, capacity):
+        self.capacity = capacity
+
+    def set_fullcapacity(self, fullcapacity):
+        self.fullcapacity = fullcapacity
+
+    def set_fullcapacityvol(self, fullcapacityvol):
+        self.fullcapacityvol = fullcapacityvol
+
+    def set_capacityvol(self, capacityvol):
+        self.capacityvol = capacityvol
 
     def __str__(self):
         summary = []
@@ -207,3 +249,4 @@ data = pd.read_csv('Drones.csv')
 
 for index, row in data.iterrows():
     ID = int(row['Drone Type'][-1])
+    print(row['Battery Capacity'])

@@ -1,8 +1,7 @@
-Drone Type,Drones Available,"Battery Capacity
-(mAh)",Base Weight (kg),Payload Capacity (KG),Payload Capacity (cu.cm),Max Slots
-DroneType1,DT1Count,2000,2,5,200,1
-DroneType2,DT2Count,2500,2.5,6,500,1
-DroneType3,DT3Count,3000,3,7,1000,2
-DroneType4,DT4Count,4000,3.5,8,2000,2
-DroneType5,DT5Count,5000,4,9,3000,2
-DroneType6,DT6Count,10000,5,10,5000,4
+Drone Type,Drones Available,Battery Capacity,Base Weight,Payload Capacity (KG),Payload Capacity (cu.cm),Max Slots,Max Speed (m/s)
+DroneType1,DT1Count,2000,2,5,200,1,M
+DroneType2,DT2Count,2500,2.5,6,500,1,M
+DroneType3,DT3Count,3000,3,7,1000,2,M
+DroneType4,DT4Count,4000,3.5,8,2000,2,M
+DroneType5,DT5Count,5000,4,9,3000,2,M
+DroneType6,DT6Count,10000,5,10,5000,4,M
