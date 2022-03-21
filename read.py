@@ -273,6 +273,8 @@ class Drone:
         self.fixedcost = 0
         self.variablecost = 0
         self.availabletime = 0
+        self.flighttime = 0
+        self.chargetime = 0
         self.used = 0
 
     def set_A(self, A):
@@ -338,6 +340,12 @@ class Drone:
     def set_used(self, used):
         self.used = used
 
+    def set_flighttime(self, flighttime):
+        self.flighttime = flighttime
+
+    def set_chargetime(self, chargetime):
+        self.chargetime = chargetime
+
     def __str__(self):
         summary = []
         str1 = ' '
@@ -358,6 +366,7 @@ class Drone:
         summary.append(str(self.capacityvol))
         summary.append(str(self.fixedcost))
         summary.append(str(self.variablecost))
+        summary.append(str(self.flighttime))
         summary.append(str(self.x))
         summary.append(str(self.y))
         summary.append(str(self.z))
@@ -609,8 +618,8 @@ for key, value in dronecounts.items():
     for i in range(int(value-1)):
         drones.append(drones[key-1])
 
-for drone in drones:
-    print(drone)
+# for drone in drones:
+#     print(drone)
 
 # for warehouse in warehouses:
 #     print(warehouse)
